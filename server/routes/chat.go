@@ -217,7 +217,11 @@ func Chat(c *gin.Context) {
 	if d.Next != stage {
 		send(gin.H{"event": "stage_done", "next": string(d.Next)})
 	}
-	send(gin.H{"done": true, "messageId": msgID, "sessionId": sess.ID, "stage": string(d.Next)})
+	doneExtra := gin.H{"done": true, "messageId": msgID, "sessionId": sess.ID, "stage": string(d.Next)}
+	if d.Next == fsm.S4 || stage == fsm.S4 {
+		doneExtra["candidates"] = ctx.Candidates
+	}
+	send(doneExtra)
 	_ = time.Now()
 }
 

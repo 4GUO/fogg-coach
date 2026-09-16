@@ -23,6 +23,9 @@ func main() {
 
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
+	if cfg.Debug {
+		r.Use(middleware.CORS()) // H5 开发联调
+	}
 
 	api := r.Group("/api")
 	api.GET("/health", routes.Health)
@@ -34,6 +37,8 @@ func main() {
 	authed := api.Group("", middleware.Auth(), middleware.RateLimit())
 	authed.GET("/me", routes.Me)
 	authed.POST("/chat", routes.Chat)
+	authed.GET("/session/active", routes.ActiveSession)
+	authed.GET("/plans", routes.ListPlans)
 	authed.POST("/plan/generate", routes.GeneratePlan)
 
 	routes.SetLLM(llm.NewFromConfig())

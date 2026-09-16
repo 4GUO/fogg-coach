@@ -6,3 +6,6 @@ dist/
 .env
 server/fogg-coach
 unpackage/
+app/node_modules/
+app/dist/
+app/.env

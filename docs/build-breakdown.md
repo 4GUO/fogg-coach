@@ -189,6 +189,30 @@
   - 📌 M1 结论：Go/Gin 单二进制 + GLM-5.2 真机全流程可用；FSM 后端权威经受住话术漂移考验；验收脚本沉淀为 `server/scripts/acceptance.py`（可重复回归）
   - ⏭ M2 待细化：uni-app 初始化（Vue3+TS+Vite）、chat/plan/today 三页、SSE 小程序端封装、阶段进度条、按钮事件协议
 
+---
+
+## M2 任务细化（2026-09-16 启动）
+
+### T2.1 uni-app 脚手架 + 请求/SSE 基建 ✅
+- `app/`：uni-preset-vue#vite-ts（Vue3+TS+Vite），mp-weixin + h5 双端编译通过
+- `utils/request.ts`：token 管理、401 静默重登（wx.login / H5 mock code）、BASE 可配
+- `composables/useChatStream.ts`：SSE 双端封装（小程序 enableChunked+onChunkReceived、H5 fetch ReadableStream；ArrayBuffer 手写 UTF-8 解码兜底；TCP 切包行缓冲）
+- 后端配套：`GET /session/active`（断线续聊：会话+历史+context 摘要）、`GET /plans`、/chat done 事件附 S4 candidates、DEBUG 模式 CORS 中间件（H5 联调，preflight 204 实测过）
+
+### T2.2 chat 页 ✅（初版）
+- 流式打字机（onDelta 增量 append）、S1-S7 阶段进度条（圆点+当前高亮+阶段名）
+- chips 快捷回复（quick_replies 事件 + 历史 meta 恢复）
+- **S4 结构化选择卡**（候选多选 1-3 → action select，绕过 LLM）+ **S6 确认卡**（confirm/revise 按钮）
+- 断线续聊（onMounted 拉活跃会话恢复）、S7/forcePlan 自动调 /plan/generate、422 回 S6 提示
+
+### T2.3 today + plan 页 ✅（初版，M3 补打卡）
+- today：无计划空态引导卡 → chat；有计划配方卡列表（锚点→行为→庆祝）→ plan 详情
+- plan：完整配方卡（三元组+提醒时间+progression 预告+教练寄语+复盘日）
+- me：用户信息 + 合规声明（AI 内容提示）；community：M3 占位
+- tabBar：today/chat/community/me（无图标文字版，视觉打磨 M3）
+
+**M2 遗留（M3 前补）**：真机联调（需 AppID）、微信开发者工具走查、SSE 弱网断流重连、视觉规范落地（design-style.md 配色/圆角）
+
 1. ✅/❌ T1.1 知识库内容结构（10 节是否够/要加域）
 2. ✅/❌ T1.2 基座 prompt 的禁令与语气
 3. ✅/❌ T1.3 各阶段话术细节（尤其 S2 提问、S5 庆祝菜单）

@@ -1,0 +1,42 @@
+{
+	"pages": [
+		{
+			"path": "pages/today/today",
+			"style": { "navigationBarTitleText": "今日" }
+		},
+		{
+			"path": "pages/chat/chat",
+			"style": { "navigationBarTitleText": "教练" }
+		},
+		{
+			"path": "pages/community/community",
+			"style": { "navigationBarTitleText": "动态" }
+		},
+		{
+			"path": "pages/me/me",
+			"style": { "navigationBarTitleText": "我的" }
+		},
+		{
+			"path": "pages/plan/plan",
+			"style": { "navigationBarTitleText": "我的计划" }
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "小福教练",
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#F7F8FA"
+	},
+	"tabBar": {
+		"color": "#9ca3af",
+		"selectedColor": "#4C6EF5",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"list": [
+			{ "pagePath": "pages/today/today", "text": "今日" },
+			{ "pagePath": "pages/chat/chat", "text": "教练" },
+			{ "pagePath": "pages/community/community", "text": "动态" },
+			{ "pagePath": "pages/me/me", "text": "我的" }
+		]
+	}
+}

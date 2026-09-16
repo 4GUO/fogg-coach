@@ -181,6 +181,13 @@
   - 🐛 修复：action 分支改 ctx 后未落库 sess.Context（golden 丢失致 S5 卡死）；FSM/抽取层对齐 S5.md 推进条件（recipe 补 anchor_time 字段，SKIP 兜底给默认时间）
   - ⚠️ T1.7 观察项：①教练偶发话术漂移（S1 给出行为建议，FSM 已拦住结构）②S5.md 无显式 DONE 指令、依赖 base 全局规则偶发迟疑（后端复评已兜底）③标记偶发被反引号包裹（正则已兼容）④S1 愿望确认教练会多问 1-2 轮（可接受）
   - ⏭ 下一步：T1.7 验收——健身/戒手机两域 E2E + B1-B4 刁钻输入 + C 防刷用例 + 转录存档 docs/test-transcripts/
+- **2026-09-16**（T1.7 验收 ✅ → **M1 完成**）：
+  - ✅ A2 健身域 / A3 戒手机域：真机 S1→S7 全流程，各出 2 habits 合法 Plan JSON 入库（A1 作息域 T1.6 已过）
+  - ✅ B1-B4 刁钻：跳跃型出糙计划不拦人、放弃型归因设计不指责、拖延症去标签化、年赚50万不评判直接问路径——全部无禁词不崩
+  - ✅ C1-C5 防刷：无 token 401 / 并发限流 429（滑动窗口+30s冷却实测命中）/ 600字截断落库500 / plan 配额拉满 429（LLM 前拦截）/ 26轮触发 ForceFill 兜底 forcePlan
+  - ✅ 验收转录：`docs/test-transcripts/t17-acceptance-final.md`（+ smoke/t17 过程转录 6 份）
+  - 📌 M1 结论：Go/Gin 单二进制 + GLM-5.2 真机全流程可用；FSM 后端权威经受住话术漂移考验；验收脚本沉淀为 `server/scripts/acceptance.py`（可重复回归）
+  - ⏭ M2 待细化：uni-app 初始化（Vue3+TS+Vite）、chat/plan/today 三页、SSE 小程序端封装、阶段进度条、按钮事件协议
 
 1. ✅/❌ T1.1 知识库内容结构（10 节是否够/要加域）
 2. ✅/❌ T1.2 基座 prompt 的禁令与语气

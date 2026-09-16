@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目是什么
 
-fogg-coach：内嵌微信小程序的「福格行为模型 AI 教练」。用户与教练 Agent 对话诊断（B=MAP 方法论），生成微习惯计划（Plan JSON）；小程序承载每日打卡、即时庆祝（Shine）、数据回流与复盘迭代。仓库当前处于 **M1 阶段（后端与 Prompt）**：Go 骨架 T1.4 已就绪（鉴权/8 表/配额中间件），下一步 T1.5 FSM，前端尚未创建。
+fogg-coach：内嵌微信小程序的「福格行为模型 AI 教练」。用户与教练 Agent 对话诊断（B=MAP 方法论），生成微习惯计划（Plan JSON）；小程序承载每日打卡、即时庆祝（Shine）、数据回流与复盘迭代。仓库当前处于 **M1 完成（后端+Prompt 验收通过）、M2 待启动**：Go/Gin 后端全链路（鉴权/FSM/LLM/SSE/Plan）+ 三域 E2E + 防刷验收全过（docs/test-transcripts/t17-acceptance-final.md）。M2 = uni-app 前端三页。
 
 ## 技术栈（2026-09-12 已确认）
 
@@ -29,7 +29,7 @@ fogg-coach：内嵌微信小程序的「福格行为模型 AI 教练」。用户
 
 ## 常用命令
 
-Go 后端（T1.4 已就绪，M1 主战场）：
+Go 后端（M1 已验收，回归用）：
 
 ```bash
 cd server

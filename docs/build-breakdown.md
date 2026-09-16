@@ -151,6 +151,10 @@
   - 🔴 实测发现（已定稿进 system-design §3.2.5）：S1-S6 对话轮必须 thinking=disabled（否则延迟 ~20s 且偶发 CoT 泄漏进 content）；S7 生成轮 max_tokens ≥4000（reasoning 吃预算，1500 会腰斩 JSON）；话术禁词不做字面校验（否定式表述均为合规，黑名单误报率高）
   - ⚠️ 轻微遗留：对话轮偶发双问/超长 ~10%（167字 vs 150字上限），属话术质量波动非红线，M1 验收时观察
   - ✅ 文档一致性清理：system-design 版本号 v1.0→v1.1、§6.1 tabBar 对齐 product-spec（today/chat/community/me）、zod 措辞改 Go 强校验
+- **2026-09-16**（鉴权定稿 + P0 schema 缺口补齐）：
+  - ✅ system-design 新增 §3.6 多端鉴权：users/user_identities 账号归一凭证分离；小程序 code2Session + H5/App 手机号验证码（个人主体下公众号网页授权/App 微信登录均不可行，已写实）；access JWT 7d + token_ver 吊销 + phone 端 refresh 30d
+  - ✅ §4.0 鉴权 API（/auth/login 统一入口、/auth/sms/request、/auth/refresh、/me）
+  - ✅ §5 schema 全量更新至 8 张表：+user_identities、+posts、+usage（沿用 legacy）、checkins +media/+group_id 留口、sessions +reset_count、users +token_ver（替代 openid 单列）
 
 1. ✅/❌ T1.1 知识库内容结构（10 节是否够/要加域）
 2. ✅/❌ T1.2 基座 prompt 的禁令与语气

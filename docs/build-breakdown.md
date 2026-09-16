@@ -50,7 +50,7 @@
 
 ### T1.3 阶段 Prompt ×7 `prompts/stages/S1-S7.md`
 
-每个文件包含：本阶段目标 / 开场话术参考 / 提问策略 / 判断信息齐全的条件 / 输出 `<stage:done>` 的触发说明 / quick_replies 建议逻辑。
+每个文件包含：本阶段目标 / 开场话术参考 / 提问策略 / 判断信息齐全的条件 / 输出 `[STAGE:DONE]` 的触发说明 / quick_replies 建议逻辑。
 
 各阶段细节要点：
 - **S1 探索愿望**：开放式提问 ≤3 轮收敛成一个具体愿望；快捷按钮给愿望域（作息/健康/学习/情绪/其他）
@@ -125,6 +125,7 @@
 - ② 防刷配额：全部做成配置（config.js/.env）：50条/日、25轮/session、500字/条、3次生成/日、全站日耗硬顶、无匿名调用、首session未结束不可开新的
 - ③ Plan JSON：progression 仅1级、累计7次打卡触发（断签不清零）、review_day默认sunday、coach_note≤60字
 - ④ 后端：Fastify5 + better-sqlite3（同步API，不用ORM）+ zod + jsonwebtoken + 自写限流中间件；Node 20+ ESM
+  （**已被 2026-09-11 换栈取代：Go/Gin + modernc.org/sqlite**；其中配额数值、鉴权流程等行为规则仍有效，Go 实现对照移植）
 - ⑤ M1验收：A1-A3全流程（含库外愿望）+ B1-B4刁钻输入 + C1-C4防刷 + 转录存档
 
 ## 进度记录
@@ -136,7 +137,14 @@
   - ✅ Agent 人工测试（我扮演 LLM，Bingo 当用户）：全流程 S1→S7 走通，产出合法 plan JSON。测试发现：S2 锚点收集偏快可放宽；S5 用户自创庆祝的弹性要保留；“年赚50w”/“我想加大”等刁钻输入处理良好
   - 决策：LLM 定为 GLM；愿望域开放不封闭；防刷/配额策略已写入 system-design §3.5
   - ✅ T1.4 后端骨架：Fastify5 + better-sqlite3@12（Node24 需 v12，坑已踩）+ zod + JWT + 限流/配额中间件 + usage 表。冒烟通过：health/login/token鉴权(401/404)/DAO全链路
-- ⏭ 下一步：T1.4 后端骨架（Fastify+SQLite+鉴权+限流中间件）→ T1.5 FSM → T1.6 LLM 层+API → T1.7 GLM 实测验收
+- **2026-09-16**（拍板会，全部锁定）：
+  - 📌 换栈确认执行：Go/Gin + uni-app；Fastify 原型整体挪 `server/legacy/` 暂留行为对照（schema/配额/鉴权流程），Go 通过 M1 验收后删
+  - 📌 标记格式统一：`[STAGE:DONE]`/`[QUICK:...]` 方括号；prompts/base.md、S4/S5/S6 与文档已全部同步
+  - 📌 chips 上限：常规 ≤4，S1 愿望域特例 ≤7（system-design「每轮 ≤3」已修订）
+  - 📌 锚点硬条件落文档：≥2 即推进、prompt 争取 3（S2.md、system-design §3.1.2 已同步，消除与①的残留矛盾）
+  - 📌 LLM 顺序：M1 先接 GLM 验收，DeepSeek M1 内补齐；按用途路由仅留配置口
+  - 顺带：system-design §10 的 uni-app 初始化移到 M2；§11 开放问题更新（LLM 选型/主体已定）
+- ⏭ 下一步（Go 重排）：T1.4 Go/Gin 骨架（Gin + modernc.org/sqlite + JWT + 限流/配额中间件，行为对照 `server/legacy/`）→ T1.5 FSM → T1.6 LLM 层（GLM 先行）+ /chat + /plan/generate → T1.7 验收存档
 
 1. ✅/❌ T1.1 知识库内容结构（10 节是否够/要加域）
 2. ✅/❌ T1.2 基座 prompt 的禁令与语气

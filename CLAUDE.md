@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目是什么
 
-fogg-coach：内嵌微信小程序的「福格行为模型 AI 教练」。用户与教练 Agent 对话诊断（B=MAP 方法论），生成微习惯计划（Plan JSON）；小程序承载每日打卡、即时庆祝（Shine）、数据回流与复盘迭代。仓库当前处于 **M1 阶段（后端与 Prompt）**，前端尚未创建。
+fogg-coach：内嵌微信小程序的「福格行为模型 AI 教练」。用户与教练 Agent 对话诊断（B=MAP 方法论），生成微习惯计划（Plan JSON）；小程序承载每日打卡、即时庆祝（Shine）、数据回流与复盘迭代。仓库当前处于 **M1 阶段（后端与 Prompt）**：Go 骨架 T1.4 已就绪（鉴权/8 表/配额中间件），下一步 T1.5 FSM，前端尚未创建。
 
 ## 技术栈（2026-09-12 已确认）
 
@@ -29,17 +29,24 @@ fogg-coach：内嵌微信小程序的「福格行为模型 AI 教练」。用户
 
 ## 常用命令
 
-目前 Node 原型挪在 `server/legacy/` 可运行（Go 项目尚未脚手架，脚手架后更新本节）：
+Go 后端（T1.4 已就绪，M1 主战场）：
 
 ```bash
-cd server/legacy
-npm install
-cp .env.example .env        # 所有配置走 .env，禁止硬编码数值
-npm run dev                 # node --watch src/app.js，监听 127.0.0.1:3210
+cd server
+cp .env.example .env        # 所有配置走 .env，禁止硬编码数值（本地开发 WX_MOCK=1）
+go build -o fogg-coach .     # 单二进制，启动自动按 db/schema.sql 建表（SQLite WAL）
+WX_MOCK=1 PORT=8080 ./fogg-coach
 
 # 冒烟（WX_MOCK=1 时任意 code 登录成功）
-curl localhost:3210/api/health
-curl -X POST localhost:3210/api/auth/login -H 'Content-Type: application/json' -d '{"code":"test"}'
+# health:          curl localhost:8080/api/health
+curl -X POST localhost:8080/api/auth/login -H 'Content-Type: application/json' -d '{"provider":"wechat_mp","code":"test"}'
+# 携带 token:      curl -H "Authorization: Bearer <token>" localhost:8080/api/me
+```
+
+Node 原型（`server/legacy/`，仅行为参考，不再扩展业务逻辑）：
+
+```bash
+cd server/legacy && npm install && npm run dev   # 127.0.0.1:3210
 ```
 
 - 无测试框架、无 lint 配置。验收方式是 build-breakdown.md 里各任务的 curl 用例（如 3 个愿望域走通 S1→S7 出合法 plan JSON）

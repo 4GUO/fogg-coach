@@ -155,6 +155,14 @@
   - ✅ system-design 新增 §3.6 多端鉴权：users/user_identities 账号归一凭证分离；小程序 code2Session + H5/App 手机号验证码（个人主体下公众号网页授权/App 微信登录均不可行，已写实）；access JWT 7d + token_ver 吊销 + phone 端 refresh 30d
   - ✅ §4.0 鉴权 API（/auth/login 统一入口、/auth/sms/request、/auth/refresh、/me）
   - ✅ §5 schema 全量更新至 8 张表：+user_identities、+posts、+usage（沿用 legacy）、checkins +media/+group_id 留口、sessions +reset_count、users +token_ver（替代 openid 单列）
+- **2026-09-16**（T1.4-Go 后端骨架 ✅）：
+  - ✅ Go 1.27 + Gin + modernc.org/sqlite（纯 Go 无 CGO，37M 单二进制）+ golang-jwt/v5 + godotenv
+  - ✅ 目录：`server/{main.go, config/, db/(db.go+schema.sql+dao.go), middleware/(auth.go+quota.go), routes/(health.go+auth.go)}`
+  - ✅ §5 定稿 8 张表启动自动建表（SQLite WAL）；鉴权：`POST /api/auth/login`（wechat_mp 双 provider 入口，phone 返回 501 占位）+ WX_MOCK 模式 + JWT(uid+ver) + token_ver 吊销检查
+  - ✅ 配额中间件移植（滑动窗口限流/冷却/日配额/全站成本顶/长消息连击，行为对照 legacy/quota.go，挂载点待 T1.6 chat 路由接上）
+  - ✅ 冒烟全过：health 200 / 无 token 401 / 假 token 401 / WX_MOCK 登录出 token（7d）/ /me 200 / 同 code 复登 userId 幂等 / 未知 provider 400 / 8 表结构验证
+  - 🕳 坑：`server/fogg-coach.db` 是 8-30 legacy 冒烟残留（旧 schema），`CREATE TABLE IF NOT EXISTS` 静默跳过导致登录 500——已备份至 /tmp 并重建；发布脚本须留意旧库迁移（M1 内生产无此问题）
+  - ⏭ 下一步：T1.5 FSM 状态机（转移表/extractStageDone/validateTransition，单测覆盖 §9 用例）
 
 1. ✅/❌ T1.1 知识库内容结构（10 节是否够/要加域）
 2. ✅/❌ T1.2 基座 prompt 的禁令与语气

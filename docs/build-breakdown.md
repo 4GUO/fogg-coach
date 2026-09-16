@@ -163,6 +163,13 @@
   - ✅ 冒烟全过：health 200 / 无 token 401 / 假 token 401 / WX_MOCK 登录出 token（7d）/ /me 200 / 同 code 复登 userId 幂等 / 未知 provider 400 / 8 表结构验证
   - 🕳 坑：`server/fogg-coach.db` 是 8-30 legacy 冒烟残留（旧 schema），`CREATE TABLE IF NOT EXISTS` 静默跳过导致登录 500——已备份至 /tmp 并重建；发布脚本须留意旧库迁移（M1 内生产无此问题）
   - ⏭ 下一步：T1.5 FSM 状态机（转移表/extractStageDone/validateTransition，单测覆盖 §9 用例）
+- **2026-09-16**（T1.5 FSM 状态机 ✅）：
+  - ✅ `server/fsm/fsm.go`：S1-S9 + active 阶段常量、顺序白名单（禁跳步）、Context 结构（含 superseded 保留与 revise_count）
+  - ✅ 标记协议（§3.1.3 方括号格式）：`ExtractMarkers` 只认末尾 2 行（中部标记=注入噪音→HOLD）、`[QUICK:...]` 解析 + Clip（常规≤4/S1≤7/每项≤8字）、`[RESET_WISH]`/`[MODE:UNDO]`
+  - ✅ `Evaluate`（LLM 路径）：DONE 但 context 缺字段不推进（§9 核心用例）；SKIP 默认值兜底（S1-S5 各有通用默认集）；S4/S6 LLM 标记不生效（推进权在按钮）；S7 无 LLM 自推路径
+  - ✅ 按钮事件：`OnSelect`（S4 选定 1-3）、`OnConfirm`（S6→S7 后端触发）、`OnRevise`（S6→S5 超 2 次锁定）、`OnResetWish`（回 S2 不重走 S1，旧数据 superseded 保留、motivation/anchors 复用；次数上限由 sessions.reset_count 列在路由层执行）、`OnModeUndo`（仅 active）
+  - ✅ 单测 16/16 全过：缺字段 HOLD×7 场景、顺序推进、按钮阶段拒 LLM、标记尾部校验、chips 裁剪、revise 锁定、RESET superseded、SKIP 兜底 S2/S3/S5、S9 门禁、context JSON 往返
+  - ⏭ 下一步：T1.6 LLM 层（provider 抽象 + promptBuilder + thinking 分轮策略 §3.2.5）+ `POST /api/chat`（SSE）+ `POST /api/plan/generate`（S7 强校验）
 
 1. ✅/❌ T1.1 知识库内容结构（10 节是否够/要加域）
 2. ✅/❌ T1.2 基座 prompt 的禁令与语气

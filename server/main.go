@@ -5,6 +5,7 @@ import (
 
 	"fogg-coach/config"
 	"fogg-coach/db"
+	"fogg-coach/llm"
 	"fogg-coach/middleware"
 	"fogg-coach/routes"
 
@@ -29,9 +30,13 @@ func main() {
 	// 登录（无需鉴权）
 	api.POST("/auth/login", routes.Login)
 
-	// 鉴权区
-	authed := api.Group("", middleware.Auth())
+	// 鉴权区（对话/计划走限流 + 配额）
+	authed := api.Group("", middleware.Auth(), middleware.RateLimit())
 	authed.GET("/me", routes.Me)
+	authed.POST("/chat", routes.Chat)
+	authed.POST("/plan/generate", routes.GeneratePlan)
+
+	routes.SetLLM(llm.NewFromConfig())
 
 	log.Printf("[fogg-coach] 监听 :%s（WX_MOCK=%v）", cfg.Port, cfg.WXMock)
 	if err := r.Run(":" + cfg.Port); err != nil {

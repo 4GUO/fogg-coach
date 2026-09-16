@@ -43,9 +43,10 @@ func nextOf(s Stage) (Stage, bool) {
 // ---------- 会话 context（sessions.context JSON） ----------
 
 type Recipe struct {
-	Behavior   string `json:"behavior"`
-	Anchor     string `json:"anchor"`     // 「在我X之后」句式
+	Behavior    string `json:"behavior"`
+	Anchor      string `json:"anchor"`      // 「在我X之后」句式
 	Celebration string `json:"celebration"`
+	AnchorTime  string `json:"anchor_time,omitempty"` // S5.md 推进条件：提醒时间（原文，S7 归一化 HH:mm）
 }
 
 type Context struct {
@@ -191,6 +192,10 @@ func missing(stage Stage, ctx *Context) []string {
 		for i, r := range ctx.Recipes {
 			if r.Anchor == "" || r.Behavior == "" || r.Celebration == "" {
 				lack = append(lack, "recipe三元组缺项")
+				break
+			}
+			if r.AnchorTime == "" {
+				lack = append(lack, "recipe缺anchor_time")
 				break
 			}
 			if !strings.HasPrefix(r.Anchor, "在我") {
@@ -349,6 +354,7 @@ var (
 		"醒后喝一杯水", "刷牙后做2个深蹲", "睡前做2分钟拉伸", "午饭后靠墙站30秒",
 	}
 	defaultCelebrations = []string{"握拳说Yes", "心里夸自己一句", "微笑一下"}
+	defaultTimes = []string{"08:00", "22:00", "12:30", "21:00"}
 )
 
 // ApplySkipDefaults 用户明确要求跳过 → 默认值兜底（不破坏顺序）
@@ -379,8 +385,27 @@ func ApplySkipDefaults(stage Stage, ctx *Context) {
 				ctx.Recipes = append(ctx.Recipes, Recipe{
 					Behavior: g, Anchor: "在我" + defaultAnchorActions[i%len(defaultAnchorActions)] + "之后",
 					Celebration: defaultCelebrations[i%len(defaultCelebrations)],
+					AnchorTime: defaultTimes[i%len(defaultTimes)],
 				})
 			}
 		}
 	}
+}
+
+// CanAdvance 后端复评（铁律的正面应用）：S1/S2/S3/S5 的 context 硬条件已齐
+// 即可推进，无需等待 LLM 输出 [STAGE:DONE]（LLM 忘标兜底）。
+// S4/S6 仍 exclusively 按钮事件；S7 后端触发。
+func CanAdvance(stage Stage, ctx *Context) bool {
+	if stage != S1 && stage != S2 && stage != S3 && stage != S5 {
+		return false
+	}
+	return len(missing(stage, ctx)) == 0
+}
+
+// CanAdvanceTo 返回顺序后继（供后端复评）
+func CanAdvanceTo(stage Stage) Stage {
+	if n, ok := nextOf(stage); ok {
+		return n
+	}
+	return ""
 }

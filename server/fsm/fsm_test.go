@@ -15,8 +15,8 @@ func fullCtx() *Context {
 		Candidates:   []string{"醒后拉开窗帘", "闹钟放远处", "睡前手机放客厅", "醒后喝一杯水", "睡前拉伸"},
 		Golden:       []string{"睡前手机放客厅", "醒后拉开窗帘"},
 		Recipes: []Recipe{
-			{Behavior: "睡前把手机放客厅充电", Anchor: "在我刷完牙之后", Celebration: "握拳说Yes"},
-			{Behavior: "醒后拉开窗帘", Anchor: "在我关掉闹钟之后", Celebration: "心里夸自己一句"},
+			{Behavior: "睡前把手机放客厅充电", Anchor: "在我刷完牙之后", Celebration: "握拳说Yes", AnchorTime: "22:30"},
+			{Behavior: "醒后拉开窗帘", Anchor: "在我关掉闹钟之后", Celebration: "心里夸自己一句", AnchorTime: "07:00"},
 		},
 	}
 }
@@ -34,8 +34,9 @@ func TestDoneButMissingContextHolds(t *testing.T) {
 		{"S2 gaps 只有1条", S2, &Context{Motivation: "m", AbilityGaps: []string{"a"}, AnchorsFound: []string{"x", "y"}}},
 		{"S2 锚点只有1个", S2, &Context{Motivation: "m", AbilityGaps: []string{"a", "b"}, AnchorsFound: []string{"x"}}},
 		{"S3 候选只有4个", S3, &Context{Candidates: []string{"1", "2", "3", "4"}}},
-		{"S5 三元组缺庆祝", S5, &Context{Golden: []string{"g"}, Recipes: []Recipe{{Behavior: "b", Anchor: "在我x之后"}}}},
-		{"S5 锚点句式错误", S5, &Context{Golden: []string{"g"}, Recipes: []Recipe{{Behavior: "b", Anchor: "每天早上", Celebration: "c"}}}},
+		{"S5 三元组缺庆祝", S5, &Context{Golden: []string{"g"}, Recipes: []Recipe{{Behavior: "b", Anchor: "在我x之后", AnchorTime: "08:00"}}}},
+		{"S5 锚点句式错误", S5, &Context{Golden: []string{"g"}, Recipes: []Recipe{{Behavior: "b", Anchor: "每天早上", Celebration: "c", AnchorTime: "08:00"}}}},
+		{"S5 缺时间", S5, &Context{Golden: []string{"g"}, Recipes: []Recipe{{Behavior: "b", Anchor: "在我x之后", Celebration: "c"}}}},
 	}
 	for _, c := range cases {
 		d := Evaluate(c.stage, c.ctx, "好的，我们继续。\n[STAGE:DONE]")

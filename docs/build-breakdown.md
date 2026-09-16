@@ -170,6 +170,17 @@
   - ✅ 按钮事件：`OnSelect`（S4 选定 1-3）、`OnConfirm`（S6→S7 后端触发）、`OnRevise`（S6→S5 超 2 次锁定）、`OnResetWish`（回 S2 不重走 S1，旧数据 superseded 保留、motivation/anchors 复用；次数上限由 sessions.reset_count 列在路由层执行）、`OnModeUndo`（仅 active）
   - ✅ 单测 16/16 全过：缺字段 HOLD×7 场景、顺序推进、按钮阶段拒 LLM、标记尾部校验、chips 裁剪、revise 锁定、RESET superseded、SKIP 兜底 S2/S3/S5、S9 门禁、context JSON 往返
   - ⏭ 下一步：T1.6 LLM 层（provider 抽象 + promptBuilder + thinking 分轮策略 §3.2.5）+ `POST /api/chat`（SSE）+ `POST /api/plan/generate`（S7 强校验）
+- **2026-09-16**（T1.6 LLM 层 + /chat + /plan/generate ✅，E2E 全流程走通）：
+  - ✅ `llm/`：Provider 抽象（OpenAI 兼容，GLM/DeepSeek 仅换 baseUrl+model）+ SSE 流式解析（429 指数退避 ×2、reasoning_content 一律丢弃）+ §3.2.5 分轮策略内置（S1-S6 thinking off / S7 on+4000）
+  - ✅ `prompts/embed.go`：基座+阶段 prompt 内嵌（核心资产原样加载）；`llm/promptBuilder.go`：基座+阶段+context 注入+历史 20 条截断
+  - ✅ 新增**信息抽取层** `llm/extract.go`（工程 prompt，不触碰话术资产）：每轮对话后轻量 JSON 调用提取 context 字段（S1 wish / S2 三件套 / S3 候选 / S5 配方+时间），失败不致命。代价：每轮 +1 次调用（thinking off ~1s）；优化方向：阶段 prompt 尾部 [CTX:{...}] 协议合并单调用——**改协议需用户确认**
+  - ✅ `POST /api/chat`：SSE（delta/stage_done/quick_replies/done{sessionId,stage}）+ 按钮事件（select/confirm/revise/reset_wish，RESET ≤2 次由 sessions.reset_count 执行）+ 首session未结束409 + 500字截断 + 25轮兜底 ForceFill 强制出计划 + 日配额
+  - ✅ FSM 集成强化：**后端复评 `CanAdvance`**（S1/S2/S3/S5 context 硬条件齐即推进，不苦等 LLM 标 DONE——实测 LLM 配齐配方后循环寒暄不出标记，后端权威兜底）；S4/S6 仍 exclusively 按钮
+  - ✅ `POST /api/plan/generate`：S7 强校验（句式/字数/HH:mm/progression=7/habits==golden 数）+ 失败重试 1 次 + 仍失败 422 回 S6 + 3次/日配额
+  - ✅ E2E（`server/scripts/e2e_chat.py`，真 GLM-5.2）：登录→S1愿望→S2三件套→S3候选→S4按钮→S5配方+时间→S6确认→S7→**合法 Plan JSON 入库**（作息域）
+  - 🐛 修复：action 分支改 ctx 后未落库 sess.Context（golden 丢失致 S5 卡死）；FSM/抽取层对齐 S5.md 推进条件（recipe 补 anchor_time 字段，SKIP 兜底给默认时间）
+  - ⚠️ T1.7 观察项：①教练偶发话术漂移（S1 给出行为建议，FSM 已拦住结构）②S5.md 无显式 DONE 指令、依赖 base 全局规则偶发迟疑（后端复评已兜底）③标记偶发被反引号包裹（正则已兼容）④S1 愿望确认教练会多问 1-2 轮（可接受）
+  - ⏭ 下一步：T1.7 验收——健身/戒手机两域 E2E + B1-B4 刁钻输入 + C 防刷用例 + 转录存档 docs/test-transcripts/
 
 1. ✅/❌ T1.1 知识库内容结构（10 节是否够/要加域）
 2. ✅/❌ T1.2 基座 prompt 的禁令与语气

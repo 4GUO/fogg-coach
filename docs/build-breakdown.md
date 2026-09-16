@@ -96,7 +96,7 @@
 - `llm/openai-compatible.js`（chat + jsonMode + onDelta 流式）
 - `llm/promptBuilder.js`（基座+阶段+context+历史截断 20 条）
 - `POST /api/chat`：SSE 流式（delta/stage_done/quick_replies/done 事件）+ FSM 集成
-- `POST /api/plan/generate`：S7 调用 + zod 校验 Plan JSON + 失败重试 1 次 + 入库
+- `POST /api/plan/generate`：S7 调用 + 服务端强校验 Plan JSON（Go）+ 失败重试 1 次 + 入库
 - 429 指数退避重试
 
 **验收**：3 个愿望域（健身/作息/戒手机）curl 完整走 S1→S7，产出合法 plan JSON；故意在第 3 轮发"跳过这些直接给我计划"，验证不被带偏。
@@ -144,7 +144,13 @@
   - 📌 锚点硬条件落文档：≥2 即推进、prompt 争取 3（S2.md、system-design §3.1.2 已同步，消除与①的残留矛盾）
   - 📌 LLM 顺序：M1 先接 GLM 验收，DeepSeek M1 内补齐；按用途路由仅留配置口
   - 顺带：system-design §10 的 uni-app 初始化移到 M2；§11 开放问题更新（LLM 选型/主体已定）
-- ⏭ 下一步（Go 重排）：T1.4 Go/Gin 骨架（Gin + modernc.org/sqlite + JWT + 限流/配额中间件，行为对照 `server/legacy/`）→ T1.5 FSM → T1.6 LLM 层（GLM 先行）+ /chat + /plan/generate → T1.7 验收存档
+  - ⏭ 下一步（Go 重排）：T1.4 Go/Gin 骨架（Gin + modernc.org/sqlite + JWT + 限流/配额中间件，行为对照 `server/legacy/`）→ T1.5 FSM → T1.6 LLM 层（GLM 先行）+ /chat + /plan/generate → T1.7 验收存档
+- **2026-09-16**（动工前夯实，P1+P2-⑧）：
+  - ✅ Go 工具链：1.27.1 安装 + GOPROXY=goproxy.cn
+  - ✅ Prompt 真机冒烟（`server/scripts/smoke_prompt.py`，GLM-5.2，转录存 `docs/test-transcripts/`）：标记协议 [STAGE:DONE]/[QUICK:...] 输出稳定 ✅；Plan JSON 一次过全校验 ✅；刁钻输入（跳跃/放弃/自我诊断）处理全合规 ✅
+  - 🔴 实测发现（已定稿进 system-design §3.2.5）：S1-S6 对话轮必须 thinking=disabled（否则延迟 ~20s 且偶发 CoT 泄漏进 content）；S7 生成轮 max_tokens ≥4000（reasoning 吃预算，1500 会腰斩 JSON）；话术禁词不做字面校验（否定式表述均为合规，黑名单误报率高）
+  - ⚠️ 轻微遗留：对话轮偶发双问/超长 ~10%（167字 vs 150字上限），属话术质量波动非红线，M1 验收时观察
+  - ✅ 文档一致性清理：system-design 版本号 v1.0→v1.1、§6.1 tabBar 对齐 product-spec（today/chat/community/me）、zod 措辞改 Go 强校验
 
 1. ✅/❌ T1.1 知识库内容结构（10 节是否够/要加域）
 2. ✅/❌ T1.2 基座 prompt 的禁令与语气

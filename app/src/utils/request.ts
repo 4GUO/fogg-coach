@@ -1,7 +1,7 @@
 /**
  * 统一请求层：token 管理、401 自动重登、多端复用（§6.0）
  */
-const BASE = 'http://127.0.0.1:8080/api' // 开发期本地；生产走同域 /api
+const BASE = 'http://43.163.7.125:8080/api' // 开发期直连服务器（devtools 需勾选不校验合法域名）；生产走同域 /api
 
 export function getToken(): string {
 	return uni.getStorageSync('fc_token') || ''

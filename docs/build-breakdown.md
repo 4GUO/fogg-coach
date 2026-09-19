@@ -187,7 +187,13 @@
   - ✅ C1-C5 防刷：无 token 401 / 并发限流 429（滑动窗口+30s冷却实测命中）/ 600字截断落库500 / plan 配额拉满 429（LLM 前拦截）/ 26轮触发 ForceFill 兜底 forcePlan
   - ✅ 验收转录：`docs/test-transcripts/t17-acceptance-final.md`（+ smoke/t17 过程转录 6 份）
   - 📌 M1 结论：Go/Gin 单二进制 + GLM-5.2 真机全流程可用；FSM 后端权威经受住话术漂移考验；验收脚本沉淀为 `server/scripts/acceptance.py`（可重复回归）
-  - ⏭ M2 待细化：uni-app 初始化（Vue3+TS+Vite）、chat/plan/today 三页、SSE 小程序端封装、阶段进度条、按钮事件协议
+- **2026-09-19**（AppID 接入 + T2.4 M2 收尾 ✅）：
+  - ✅ AppID `wxb97f542bb126ab4c` 接入（**未认证企业号，后续切个人号**，届时 manifest mp-wein 段 + server/.env WX_APPID 同步换）；清了 manifest 重复占位 appid；WX_MOCK 仍=1 等 AppSecret；mp-weixin/H5 双端编译验证
+  - ✅ T2.4a SSE 断流重连：15s 空闲看门狗（可配）+双端手动 abort（MP task.abort 兼容基础库不回调 / H5 AbortController）；isRecoverable 只认网络层/超时/5xx；重连≤3次指数退避 1/2/4s；断流后拉 /session/active 三态裁决——**done** 补渲染 / **resend**（消息确未入库）安全重发 / **wait**（已入库未回复）绝不重发防重复；页顶提示条三态（连接中/已重连/失败点击重试）
+  - ✅ T2.4b 视觉规范：主色定稿 #4C6EF5，App.vue 页级 `--fc-*` 令牌 + uni.scss `$fc-*` 同步；四页统一刷（today 空态引导卡/配方卡标签行、chat 气泡圆角细边框、me 合规声明改克制样式、community 规范空态）；tabBar #86909C/#4C6EF5；安全区适配
+  - 🐛 review 补刀（subagent 产出查出的）：>500字输入服务端 rune 截断落库，断流重连判重全等匹配失效→重复入库；修：input 加 maxlength=500（uni 默认仅 140）+ send 端 rune 截断 + assess 容忍截断版匹配
+  - ⚠️ 遗留：wait 死角（content 已入库但回复未落库，只能手动重试；彻底解需后端幂等 turn-id，记 M3 技术债）；MP abort 兜底 reject / 低版本基础库手写 UTF-8 解码需真机验证
+  - ⏭ 下一步：T2.4c H5 全流程走查（服务端跑起来走 S1→S7）→ M3 任务细化给 Bingo 确认
 
 ---
 
@@ -211,7 +217,7 @@
 - me：用户信息 + 合规声明（AI 内容提示）；community：M3 占位
 - tabBar：today/chat/community/me（无图标文字版，视觉打磨 M3）
 
-**M2 遗留（M3 前补）**：真机联调（需 AppID）、微信开发者工具走查、SSE 弱网断流重连、视觉规范落地（design-style.md 配色/圆角）
+**M2 遗留（T2.4 已清一部分，2026-09-19）**：~~SSE 弱网断流重连~~✅、~~视觉规范落地~~✅（均 T2.4 完成）；剩：真机联调（AppID 已接入 `wxb97f542bb126ab4c`，**待 AppSecret**）、微信开发者工具走查
 
 1. ✅/❌ T1.1 知识库内容结构（10 节是否够/要加域）
 2. ✅/❌ T1.2 基座 prompt 的禁令与语气

@@ -25,10 +25,10 @@
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "小福教练",
 		"navigationBarBackgroundColor": "#FFFFFF",
-		"backgroundColor": "#F7F8FA"
+		"backgroundColor": "#F7F7F8"
 	},
 	"tabBar": {
-		"color": "#9ca3af",
+		"color": "#86909C",
 		"selectedColor": "#4C6EF5",
 		"borderStyle": "black",
 		"backgroundColor": "#ffffff",

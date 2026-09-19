@@ -12,6 +12,16 @@
  * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
  */
 
+/* fogg-coach 设计令牌（design-style.md 2026-09-10），scss 环境可直接使用 */
+$fc-primary: #4C6EF5;
+$fc-primary-weak: #EEF2FF;
+$fc-primary-disabled: #C7D2FE;
+$fc-green: #2F9E6E;
+$fc-bg: #F7F7F8;
+$fc-text: #1F2329;
+$fc-text-sub: #86909C;
+$fc-border: #E5E6EB;
+
 /* 颜色变量 */
 
 /* 行为相关颜色 */

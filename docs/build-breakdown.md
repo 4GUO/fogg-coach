@@ -217,7 +217,49 @@
 - me：用户信息 + 合规声明（AI 内容提示）；community：M3 占位
 - tabBar：today/chat/community/me（无图标文字版，视觉打磨 M3）
 
-**M2 遗留（T2.4 已清一部分，2026-09-19）**：~~SSE 弱网断流重连~~✅、~~视觉规范落地~~✅（均 T2.4 完成）；剩：真机联调（AppID 已接入 `wxb97f542bb126ab4c`，**待 AppSecret**）、微信开发者工具走查
+**M2 遗留（T2.4 已清一部分，2026-09-19）**：~~SSE 弱网断流重连~~✅、~~视觉规范落地~~✅（均 T2.4 完成）；剩：真机联调（AppID 已接入 `wxb97f542bb126ab4c`，AppSecret 已配 WX_MOCK=0，**等 Bingo 开发者工具走查**）、微信开发者工具走查
+
+---
+
+## M3 任务细化（2026-09-19，待 Bingo 确认后开工）
+
+> 锦定规格全在：system-design §3.3.3-3.3.6/§4.4-4.5、pages-interaction §1/§3、community-roadmap 档1。M3 目标：**打卡闭环上线**——生成计划→每日打卡→streak→升级→分享。
+
+### T3.1 打卡后端（checkin + streak + upgrade + /today）
+- `POST /api/checkin` `{habitId, done, mood?, note?, media?}`：当日一次（UNIQUE(plan,habit,date) 约束，重复 409）；Asia/Shanghai 自然日服务端统一；**先落库即回 <100ms**（celebration 文案服务端选好，confetti: true）
+- streak：habit 粒度连续自然日计数，**断签不清零累计**（progression 累计口径）；完成率（近7天 done/应打）；`sum(done)==7` → 返回 upgrade_hint
+- `GET /api/today`：按 plan 分组配方卡 + 今日打卡态 + streak + 提醒时间到未打卡置顶排序
+- media：图片≤3，MVP 服务器本地磁盘存储 + `POST /api/upload`（不上 OSS）
+- **验收**：curl 幂等（重复 409）/ 断签后 streak 口径正确 / 第 7 次打卡 upgrade_hint 触发 / today 聚合结构齐全
+
+### T3.2 today 页打卡交互 + Shine 庆祝（前端）
+- 轻打卡：点卡片即完成 + 微震动 + Shine 动画（canvas 粒子 confetti ~1.5s 可跳过；文案库 ≥15 条）；**乐观更新不等网络**，失败回滚提示
+- 记录打卡浮层（可选）：完成后“记录一下？”→ 文字/图片≤3/mood，永远可跳过
+- upgrade_hint 弹“要不要升级？”卡：Yes 更新 behavior；No 后端记 next_ask_at 7天后再问
+- **验收**：双端编译过 + H5 打卡动线走查（打卡→动画→streak 变化→记录）
+
+### T3.3 me 页 stats 首屏
+- `GET /api/stats?range=30d`：30天热力图 / streak / 近7天完成率 / mood 曲线（7日滑动均值）
+- me 首屏渲染 + 无数据空态；不做独立 stats 页（已拍板）
+- **验收**：造 30 天假数据，曲线/热力图正确
+
+### T3.4 订阅消息提醒
+- 模板申请：**Bingo 后台操作**（我提供类目/话术）；一次性订阅额度模型：打卡成功页引导授权 → 服务端记账剩余次数 → 不足降级 today 红点
+- 发送：定时扫描 anchor_time 到点未打卡 → 推送（有额度才发）
+- ⚠️ 未认证企业号订阅消息权限**待验证**，不行则整块后移（切个人号后）
+- **验收**：真机收到一次到点提醒
+
+### T3.5 薄社区 MVP（档1）
+- `POST /api/posts`：从打卡记录分享（默认不分享，主动开启；streak 亮点时出现引导文案“连续5天了，分享给大家看看？”）
+- 全量机审：msgSecCheck/imgSecCheck（⚠️ 未认证权限风险，fallback：敏感词库+人工过审，不影响主流程）
+- 流：时间倒序 / 仅“加油”点赞 / 删自己内容 / 举报入口；community 页前端
+- **验收**：分享→机审→流展示→点赞→删除 全链
+
+### T3.6 M3 收尾
+- 技术债：chat 幂等 turn-id（彻底解断流重发；客户端传、服务端去重）
+- M3 E2E：生成计划→打卡→streak→记录→分享→升级卡 全链路 + 转录存档 + progress 记录
+
+**顺序建议**：T3.1 → T3.2 →（T3.3 可并行）→ T3.4/T3.5 看 AppID 权限实情 → T3.6 收尾验收
 
 1. ✅/❌ T1.1 知识库内容结构（10 节是否够/要加域）
 2. ✅/❌ T1.2 基座 prompt 的禁令与语气
